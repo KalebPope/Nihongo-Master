@@ -19,14 +19,14 @@ namespace JapaneseMasterAPI.Endpoints
 
             app.MapPost("api/auth/refresh-token", RefreshTokenRequest);
 
-            app.MapGet("api/auth/verify", AuthOnly).RequireAuthorization("Admin");
+            app.MapGet("api/auth/verify", AuthOnly);
             
         }
 
         private static async Task<IResult> Signup(JMDbContext context,  UserDto request)
 
         {
-            if (await context.Users.AnyAsync(u => u.Username == request.Username))
+            if (await context.Users.AnyAsync(u => u.UserName == request.Username))
             {
                 return Results.BadRequest("Username already exists");
             }
@@ -34,7 +34,7 @@ namespace JapaneseMasterAPI.Endpoints
             var user = new User();
             var hashedPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
 
-            user.Username = request.Username;
+            user.UserName = request.Username;
             user.PasswordHash = hashedPassword;
 
             context.Users.Add(user);
@@ -45,7 +45,7 @@ namespace JapaneseMasterAPI.Endpoints
 
         private static async Task<IResult> Login(JMDbContext context, UserDto request, TokenService tokenService)
         {
-            var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserName == request.Username);
             if (user == null)
             {
                 return Results.BadRequest("User not found");
